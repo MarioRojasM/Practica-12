@@ -4,14 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use Illuminate\Http\Request;
+use App\Http\Resources\ProductoResource;
 
 class ProductoController
 {
-    // Carga los productos
-    public function index()
+    // Carga los productos usando Filtros y Paginación
+    public function index(Request $request)
     {
-        $productos = Producto::with('categoria')->get();
-        return response()->json($productos);
+        $productos = Producto::with('categoria')
+            ->buscar($request->busqueda)
+            ->deCategoria($request->categoria_id)
+            ->rangoPrecio($request->precio_min, $request->precio_max)
+            ->orderBy($request->get('orden', 'nombre'), $request->get('dir', 'asc'))
+            ->paginate($request->get('por_pagina', 15));
+
+        // Usamos la colección del Resource para que incluya los metadatos de paginación
+        return ProductoResource::collection($productos);
     }
 
     // Guarda uno nuevo
