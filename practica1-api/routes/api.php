@@ -4,21 +4,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\AuthController; // Asegúrate de tener este controlador de tu Práctica 02
+use App\Http\Controllers\AuthController; 
 
-// --- RUTAS DE AUTENTICACIÓN (Las que nos faltaban) ---
+// --- RUTAS DE AUTENTICACIÓN ---
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// --- RUTAS PROTEGIDAS ---
+// --- RUTAS PROTEGIDAS (Requieren inicio de sesión) ---
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    
+    // 1. Aquí está nuestra ruta /me apuntando a tu función
+    Route::get('/me', [AuthController::class, 'me']);
+    
     Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // 2. Protegemos las acciones de administrador (crear, actualizar, borrar)
+    Route::apiResource('productos', ProductoController::class)->except(['index', 'show']);
 });
 
-// --- RUTAS DEL CATÁLOGO Y PRODUCTOS ---
-Route::apiResource('productos', ProductoController::class);
+// --- RUTAS PÚBLICAS (Catálogo) ---
+// Las vistas de los productos se quedan públicas para que cualquiera vea el catálogo
+Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
+
 Route::apiResource('categorias', CategoriaController::class);
 Route::get('categorias/{categoria}/productos', [CategoriaController::class, 'productos']);

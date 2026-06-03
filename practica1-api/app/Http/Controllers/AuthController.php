@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Gate; // <-- ¡Aquí importamos el Gate!
 
 class AuthController
 {
@@ -71,6 +72,26 @@ class AuthController
 
         return response()->json([
             'message' => 'Sesión cerrada correctamente'
+        ]);
+    }
+
+    /**
+     * Retorna el usuario actual y sus permisos calculados
+     */
+    public function me(Request $request) 
+    {
+        $user = $request->user();
+        
+        return response()->json([
+            'id'       => $user->id,
+            'name'     => $user->name,
+            'email'    => $user->email,
+            'rol'      => $user->rol,
+            'permisos' => [
+                'crear'    => Gate::allows('crear-producto'),
+                'editar'   => Gate::allows('editar-producto'),
+                'eliminar' => Gate::allows('eliminar-producto'),
+            ],
         ]);
     }
 }

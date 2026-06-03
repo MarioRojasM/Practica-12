@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductoResource;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // <-- Importamos
 
 class ProductoController
 {
+    use AuthorizesRequests; // <-- Lo activamos aquí adentro
+
     // Carga los productos usando Filtros y Paginación
     public function index(Request $request)
     {
@@ -25,6 +28,9 @@ class ProductoController
     // Guarda uno nuevo
     public function store(Request $request)
     {
+        // ¡El escudo de seguridad para crear! Solo Admin o Editor pasan de aquí
+        $this->authorize('create', Producto::class);
+        
         $producto = Producto::create($request->all());
         return response()->json($producto, 201);
     }
@@ -33,6 +39,10 @@ class ProductoController
     public function destroy($id)
     {
         $producto = Producto::findOrFail($id);
+        
+        // ¡El escudo de seguridad para borrar! Solo Admin pasa de aquí
+        $this->authorize('delete', $producto);
+        
         $producto->delete();
         
         return response()->json(['message' => 'Producto eliminado correctamente']);

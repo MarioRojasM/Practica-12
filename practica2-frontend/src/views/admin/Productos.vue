@@ -2,8 +2,11 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+// 1. Importamos tu tienda de autenticación
+import { useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
+const auth = useAuthStore() // Inicializamos Pinia
 const productos = ref([])
 
 onMounted(async () => {
@@ -17,18 +20,21 @@ onMounted(async () => {
 
 // MAGIA EN VIVO: Función para borrar
 const eliminarProducto = async (id) => {
-  // Confirmación chiquita para no borrar por accidente
   if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
     try {
-      // 1. Le decimos a Laravel que lo borre de la base de datos
-      await axios.delete(`http://localhost:8000/api/productos/${id}`)
+      // 2. Le mandamos el token a Laravel para demostrar que tenemos permiso
+      await axios.delete(`http://localhost:8000/api/productos/${id}`, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        }
+      })
       
-      // 2. MAGIA: Filtramos la lista para quitar el producto borrado sin recargar la página
+      // MAGIA: Filtramos la lista para quitar el producto borrado
       productos.value = productos.value.filter(producto => producto.id !== id)
       
     } catch (error) {
       console.error("Error al eliminar:", error)
-      alert("Hubo un error al intentar borrar el producto.")
+      alert("Hubo un error de permisos o conexión al intentar borrar el producto.")
     }
   }
 }
@@ -37,8 +43,12 @@ const eliminarProducto = async (id) => {
 <template>
   <div class="admin-productos">
     <div class="header-admin">
-      <h2 class="titulo-admin">Administrar Productos</h2>
-      <button @click="router.push('/admin/nuevo')" class="btn-nuevo">
+      <h2 class="titulo-admin">
+        Administrar Productos 
+        <span v-if="auth.user" class="badge-rol">{{ auth.user.rol }}</span>
+      </h2>
+      
+      <button v-can="'crear'" @click="router.push('/admin/nuevo')" class="btn-nuevo">
         + Nuevo Producto
       </button>
     </div>
@@ -65,9 +75,10 @@ const eliminarProducto = async (id) => {
             </td>
             <td>${{ producto.precio }}</td>
             <td class="acciones">
-              <button class="btn-editar">Editar</button>
               
-              <button @click="eliminarProducto(producto.id)" class="btn-eliminar">Borrar</button>
+              <button v-can="'editar'" class="btn-editar">Editar</button>
+              
+              <button v-can="'eliminar'" @click="eliminarProducto(producto.id)" class="btn-eliminar">Borrar</button>
               
             </td>
           </tr>
@@ -84,7 +95,11 @@ const eliminarProducto = async (id) => {
 <style scoped>
 .admin-productos { padding: 1rem; }
 .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid #fbcfe8; padding-bottom: 1rem; }
-.titulo-admin { color: #1f2937; margin: 0; }
+.titulo-admin { color: #1f2937; margin: 0; display: flex; align-items: center; gap: 1rem; }
+
+/* Estilo para la etiqueta del rol */
+.badge-rol { background-color: #fbcfe8; color: #be185d; font-size: 0.8rem; padding: 0.3rem 0.8rem; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+
 .btn-nuevo { background-color: #e83e8c; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
 .btn-nuevo:hover { background-color: #d2337d; }
 
