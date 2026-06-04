@@ -61,4 +61,10 @@ class ProductoController
         
         return response()->json($producto);
     }
+    public function show($id)
+    {
+        // Buscamos el producto por su ID y lo devolvemos
+        $producto = Producto::findOrFail($id);
+        return response()->json($producto, 200);
+    }
 }
