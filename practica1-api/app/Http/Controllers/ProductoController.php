@@ -6,6 +6,8 @@ use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductoResource;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // <-- Importamos
+use App\Http\Requests\StoreProductoRequest;
+use App\Http\Requests\UpdateProductoRequest;
 
 class ProductoController
 {
@@ -26,9 +28,9 @@ class ProductoController
     }
 
     // Guarda uno nuevo
-    public function store(Request $request)
+    public function store(StoreProductoRequest $request) // <-- CAMBIO AQUÍ
     {
-        // ¡El escudo de seguridad para crear! Solo Admin o Editor pasan de aquí
+        //  Solo Admin o Editor pasan de aquí
         $this->authorize('create', Producto::class);
         
         $producto = Producto::create($request->all());
@@ -46,5 +48,17 @@ class ProductoController
         $producto->delete();
         
         return response()->json(['message' => 'Producto eliminado correctamente']);
+    }
+    public function update(UpdateProductoRequest $request, $id)
+    {
+        $producto = Producto::findOrFail($id);
+        
+        //  Solo Admin o Editor pasan de aquí
+        $this->authorize('update', $producto);
+        
+        // Si la validación y los permisos pasan, actualizamos
+        $producto->update($request->all());
+        
+        return response()->json($producto);
     }
 }
