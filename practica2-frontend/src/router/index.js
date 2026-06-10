@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import Carrito from '../views/Carrito.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: '/catalogo' }, // Que por defecto te mande al catálogo público
+    { path: '/', redirect: '/catalogo' }, 
     
     // Rutas públicas
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue') },
@@ -27,10 +28,16 @@ const router = createRouter({
     { 
       path: '/admin/productos', 
       name: 'admin-productos', 
-      component: () => import('../views/admin/Productos.vue'), // Asumiendo que tienes esta vista
+      component: () => import('../views/admin/Productos.vue'), 
       meta: { requiresAuth: true } 
     },
-    
+    // ¡AQUÍ ESTÁ LA CORRECCIÓN!
+    {
+      path: '/carrito',
+      name: 'Carrito',
+      component: Carrito,
+      meta: { requiresAuth: true } // Protegemos el carrito
+    }
   ]
 })
 

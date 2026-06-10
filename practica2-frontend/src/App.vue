@@ -12,18 +12,17 @@ const hacerLogout = async () => {
 
 <template>
   <div id="app">
-    <!-- BARRA DE NAVEGACIÓN -->
     <nav class="navbar">
-      <div class="nav-brand">Práctica 02 - Auth</div>
+      <div class="nav-brand">Práctica 11 - Tienda</div>
       
       <div class="nav-links">
-        <!-- Si el usuario TIENE token (sesión iniciada) -->
         <template v-if="auth.isAuthenticated">
+          <router-link to="/carrito" class="nav-link">🛒 Mi Carrito</router-link>
+          
           <span class="user-name">Hola, {{ auth.user?.name || 'Usuario' }}</span>
           <button @click="hacerLogout" class="btn-logout">Cerrar Sesión</button>
         </template>
         
-        <!-- Si el usuario NO tiene token (invitado) -->
         <template v-else>
           <router-link to="/login" class="nav-link">Login</router-link>
           <router-link to="/register" class="nav-link">Registro</router-link>
@@ -31,7 +30,6 @@ const hacerLogout = async () => {
       </div>
     </nav>
 
-    <!-- CONTENEDOR DE LAS VISTAS (Login, Register, Dashboard) -->
     <main class="container">
       <router-view></router-view>
     </main>
@@ -62,7 +60,7 @@ body {
 .btn-logout { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold;}
 .btn-logout:hover { background-color: #dc2626; }
 
-/* Clases reutilizables para los formularios (Login, Register, Dashboard) */
+/* Clases reutilizables para los formularios */
 .card { 
   background: white; 
   padding: 2rem; 

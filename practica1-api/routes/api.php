@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\AuthController; 
+use App\Http\Controllers\PedidoController;
 
 // --- RUTAS DE AUTENTICACIÓN ---
 Route::post('/register', [AuthController::class, 'register']);
@@ -20,11 +21,17 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // 2. Protegemos las acciones de administrador (crear, actualizar, borrar)
     Route::apiResource('productos', ProductoController::class)->except(['index', 'show']);
+
+    // --- RUTAS PÚBLICAS (Catálogo) ---
+    // Las vistas de los productos se quedan públicas para que cualquiera vea el catálogo
+    Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
+
+    Route::apiResource('categorias', CategoriaController::class);
+    Route::get('categorias/{categoria}/productos', [CategoriaController::class, 'productos']);
+
+    Route::post('/pedidos', [PedidoController::class, 'store']);
+    Route::get('/pedidos/{pedido}', [PedidoController::class, 'show']);
+
 });
 
-// --- RUTAS PÚBLICAS (Catálogo) ---
-// Las vistas de los productos se quedan públicas para que cualquiera vea el catálogo
-Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
-
-Route::apiResource('categorias', CategoriaController::class);
-Route::get('categorias/{categoria}/productos', [CategoriaController::class, 'productos']);
+    

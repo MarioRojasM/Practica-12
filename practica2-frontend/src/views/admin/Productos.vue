@@ -11,8 +11,15 @@ const productos = ref([])
 
 onMounted(async () => {
   try {
-    const respuesta = await axios.get('http://localhost:8000/api/productos')
-    productos.value = respuesta.data.data || respuesta.data
+    // Le enseñamos el token a Laravel para que nos deje ver la lista
+    const { data } = await axios.get('http://localhost:8000/api/productos', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    
+    // Dependiendo de cómo armaste tu API, los datos pueden venir en data o data.data
+    productos.value = data.data || data 
   } catch (error) {
     console.error("Error al cargar los productos:", error)
   }

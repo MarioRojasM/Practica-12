@@ -23,10 +23,14 @@ const { value: descripcion } = useField('descripcion')
 const { value: categoria_id } = useField('categoria_id')
 
 const erroresServidor = ref({})
-
 onMounted(async () => {
   try {
-    const { data } = await axios.get('http://localhost:8000/api/categorias')
+    // 1. AQUI AGREGAMOS EL GAFETE (TOKEN) PARA QUE LARAVEL NOS DEJE VER LAS CATEGORÍAS
+    const { data } = await axios.get('http://localhost:8000/api/categorias', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
     categorias.value = data.data
   } catch (error) {
     console.error("Error al cargar categorías:", error)
@@ -37,7 +41,8 @@ const guardar = handleSubmit(async (values) => {
   try {
     await axios.post('http://localhost:8000/api/productos', values, {
       headers: {
-        Authorization: `Bearer ${auth.token}`
+        // 2. ASEGURAMOS EL TOKEN DESDE LOCALSTORAGE PARA EVITAR FALLOS AL RECARGAR
+        Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
     alert('¡Producto guardado exitosamente!')
