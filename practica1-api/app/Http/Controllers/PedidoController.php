@@ -7,7 +7,9 @@ use App\Models\Producto;
 use App\Jobs\EnviarConfirmacionPedido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Routing\Controller; // ✅ Arreglo del Error de Controlador
+use Illuminate\Routing\Controller;
+use App\Events\NuevoPedidoRecibido;
+use App\Events\StockBajoAlerta;
 
 class PedidoController extends Controller
 {
@@ -30,11 +32,20 @@ class PedidoController extends Controller
                     'precio_unitario' => $item['precio'], 
                 ]);
                 
-                Producto::find($item['producto_id'])->decrement('stock', $item['cantidad']);
+                $producto = Producto::find($item['producto_id']);
+                $producto->decrement('stock', $item['cantidad']);
+
+                // ✅ Disparar evento si el stock es 5 o menos
+                if ($producto->stock <= 5) { // [cite: 76]
+                    broadcast(new StockBajoAlerta($producto, $producto->stock)); // [cite: 77]
+                } // [cite: 78]
             }
             
             return $p;
         });
+
+        // ✅ Disparar evento del nuevo pedido recibido
+        broadcast(new NuevoPedidoRecibido($pedido))->toOthers(); // 
 
         // 3. Despachamos el Job a la cola con los 5 segundos
         EnviarConfirmacionPedido::dispatch($pedido)->delay(now()->addSeconds(5));
